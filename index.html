@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#11c76f">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<script>document.documentElement.dataset.theme='light';try{var t=localStorage.getItem('mv-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<meta name="description" content="Mavero conecta sua conta e mostra faturamento, estoque e resultados da sua empresa em tempo real.">
+<title>Mavero — Todo real da sua empresa, no lugar certo</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#010c07;--bg2:#04170f;--ink:#eaf5ee;--muted:#8da399;--line:rgba(160,255,200,.12);--g1:#e9fff1;--g2:#3ddc84;--g3:#00b865;--g4:#04794a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:84px}
+body{background:var(--bg);color:var(--ink);font-family:'Inter Tight',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.lock{overflow:hidden}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--g2);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+/* loader */
+#loader{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;transition:opacity .7s ease,visibility .7s}
+#loader::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 50% at 80% 0,rgba(61,220,132,.22),transparent 70%)}
+.loaded #loader{opacity:0;visibility:hidden}
+.ld{position:relative;text-align:center}
+.ld svg{width:112px;height:auto;overflow:visible}
+.ld .p1,.ld .p3{opacity:0;animation:rise .8s .1s forwards cubic-bezier(.2,.7,.2,1)}
+.ld .p3{animation-delay:.3s}
+.ld .p2{opacity:0;animation:arrow .9s .55s forwards cubic-bezier(.2,.7,.2,1)}
+.ld .bar{width:120px;height:2px;background:var(--line);margin:30px auto 0;border-radius:2px;overflow:hidden}
+.ld .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--g3),var(--g1));transform:translateX(-100%);animation:fill 1.5s .2s forwards ease-in-out}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes arrow{from{opacity:0;transform:translate(-50px,50px)}to{opacity:1;transform:none}}
+@keyframes fill{to{transform:none}}
+
+/* background */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg))}
+.bg::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:72px 72px;-webkit-mask-image:radial-gradient(70% 60% at 50% 0,#000,transparent);mask-image:radial-gradient(70% 60% at 50% 0,#000,transparent);opacity:.55}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform}
+.o1{width:520px;height:520px;right:-120px;top:-160px;background:#0f7a4a;animation:d1 22s ease-in-out infinite alternate}
+.o2{width:420px;height:420px;left:-140px;top:38%;background:#06432c;animation:d2 28s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(-120px,140px) scale(1.15)}}
+@keyframes d2{to{transform:translate(160px,-90px) scale(1.2)}}
+#fx{position:absolute;inset:0;width:100%;height:100%}
+
+/* nav */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;border-bottom:1px solid transparent;transition:background .3s,border-color .3s,backdrop-filter .3s}
+header.s{background:rgba(1,12,7,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:700;font-size:21px;letter-spacing:-.025em}
+.logo svg{width:32px;height:30px}
+.links{display:flex;gap:34px;font-size:15px;color:var(--muted);font-weight:500}
+.links a{transition:color .2s}.links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 26px;border-radius:999px;font-weight:600;font-size:16px;background:linear-gradient(180deg,#5af0a0,var(--g3));color:#02150c;border:0;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.15) inset,0 10px 40px -10px rgba(61,220,132,.6);transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(255,255,255,.2) inset,0 16px 50px -10px rgba(61,220,132,.75)}
+.btn.ghost{background:rgba(255,255,255,.04);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset}
+.btn.ghost:hover{background:rgba(255,255,255,.08);box-shadow:0 0 0 1px rgba(160,255,200,.25) inset}
+.btn.sm{padding:10px 20px;font-size:14.5px}
+
+/* hero */
+.hero{padding:110px 0 60px;text-align:center}
+.tag{display:inline-flex;align-items:center;gap:9px;padding:7px 16px;border:1px solid var(--line);border-radius:99px;font-size:14px;color:var(--muted);background:rgba(255,255,255,.03)}
+.tag i{width:7px;height:7px;border-radius:50%;background:var(--g2);box-shadow:0 0 12px var(--g2);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+h1{margin:28px auto 0;font-size:clamp(42px,7.2vw,88px);line-height:1;letter-spacing:-.045em;font-weight:700;max-width:12.5em;background:linear-gradient(180deg,#fff 30%,#9fd8b8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{margin:26px auto 0;max-width:34em;font-size:clamp(17px,2vw,21px);color:var(--muted)}
+.cta{margin-top:40px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.fine{margin-top:18px;font-size:14px;color:var(--muted)}
+
+/* dashboard */
+.dash{margin:76px auto 0;max-width:920px;border:1px solid var(--line);border-radius:26px;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01));box-shadow:0 60px 120px -40px rgba(0,184,101,.35);text-align:left}
+.dash-in{border-radius:18px;background:rgba(2,18,11,.85);padding:28px;display:grid;grid-template-columns:1.6fr 1fr;gap:28px}
+.lab{font-size:14px;color:var(--muted)}
+.big{font-size:clamp(34px,5vw,52px);font-weight:700;letter-spacing:-.04em;margin:6px 0 2px}
+.up{display:inline-block;background:rgba(61,220,132,.14);color:var(--g2);padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;margin-left:8px;vertical-align:middle;letter-spacing:0}
+.chart{margin-top:14px;width:100%;height:auto;display:block;overflow:visible}
+.chart .ln{fill:none;stroke:url(#lg);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.chart .ar{fill:url(#ag);opacity:0}
+.vis .chart .ln{animation:draw 2s .2s forwards ease-out}
+.vis .chart .ar{animation:fade 1.2s 1.2s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}@keyframes fade{to{opacity:1}}
+.side{display:flex;flex-direction:column;gap:2px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border:0}
+.row b{font-weight:600}.low{color:#ff8a5c}.ok{color:var(--muted)}
+
+/* sections */
+section{padding:110px 0}
+.hd{max-width:760px}
+h2{font-size:clamp(32px,4.6vw,54px);line-height:1.05;letter-spacing:-.035em;font-weight:700}
+.sub{margin-top:18px;color:var(--muted);font-size:19px;max-width:34em}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.02)}
+.stat{padding:34px 30px;border-right:1px solid var(--line)}.stat:last-child{border:0}
+.stat b{display:block;font-size:44px;letter-spacing:-.04em;font-weight:700;color:#fff}
+.stat span{color:var(--muted);font-size:15px}
+.bento{margin-top:56px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.cell{grid-column:span 2;padding:32px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.01));transition:border-color .3s,transform .3s}
+.cell:hover{border-color:rgba(61,220,132,.4);transform:translateY(-4px)}
+.cell.w{grid-column:span 3}
+.cell svg{width:28px;height:28px;stroke:var(--g2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cell h3{margin:22px 0 8px;font-size:21px;letter-spacing:-.02em;font-weight:600}
+.cell p{color:var(--muted);font-size:16px}
+.steps{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.step{padding:32px;border-radius:22px;border:1px solid var(--line);position:relative;overflow:hidden}
+.step em{font-style:normal;font-size:15px;color:var(--g2);font-weight:600}
+.step h3{margin:60px 0 8px;font-size:23px;letter-spacing:-.025em}
+.step p{color:var(--muted)}
+.sec{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;border:1px solid var(--line);border-radius:28px;padding:56px;background:radial-gradient(70% 90% at 100% 0,rgba(61,220,132,.16),transparent 70%),rgba(255,255,255,.02)}
+.sec ul{list-style:none;padding:0;display:grid;gap:16px}
+.sec li{display:flex;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line);font-weight:500}
+.sec li:last-child{border:0;padding:0}
+.sec li:before{content:"";flex:none;width:20px;height:20px;margin-top:2px;border-radius:50%;background:rgba(61,220,132,.15) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5l2.8 2.8L14 7.5' fill='none' stroke='%233ddc84' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.faq{margin-top:48px;max-width:820px}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:20px;padding:24px 0;font-size:20px;font-weight:600;letter-spacing:-.015em}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:400;font-size:28px;line-height:1;color:var(--g2);transition:transform .3s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{padding:0 40px 26px 0;color:var(--muted);font-size:17px}
+.final{text-align:center;padding:120px 0}
+.final h2{margin:0 auto;max-width:12em}
+footer{border-top:1px solid var(--line);padding:56px 0 40px;color:var(--muted);font-size:15px}
+.fg{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:32px}
+.fg h4{color:var(--ink);font-size:15px;margin-bottom:14px;font-weight:600}
+.fg a{display:block;padding:4px 0}.fg a:hover{color:var(--ink)}
+.copy{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:14px}
+
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.vis{opacity:1;transform:none}
+
+@media(max-width:860px){
+.links{display:none}
+.hero{padding:70px 0 30px}
+.dash-in{grid-template-columns:1fr;padding:20px}
+.stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--line)}
+.bento,.steps{grid-template-columns:1fr}.cell,.cell.w{grid-column:auto}
+.sec{grid-template-columns:1fr;padding:32px 24px}
+.fg{grid-template-columns:1fr 1fr}.fg>div:first-child{grid-column:1/-1}
+section{padding:72px 0}.final{padding:80px 0}
+.step h3{margin-top:36px}
+.o1,.o2{width:300px;height:300px}
+}
+[hidden]{display:none!important}
+#loader{background:#010c07}
+:root[data-theme=light]{--bg:#f4f8f5;--bg2:#e8f1ec;--ink:#0b1a12;--muted:#50655a;--line:rgba(4,68,47,.14);--g2:#0a9a57;color-scheme:light}
+[data-theme=light] h1{background:linear-gradient(180deg,#04170f 35%,#1f7a52);-webkit-background-clip:text;background-clip:text}
+[data-theme=light] header.s{background:rgba(244,248,245,.8)}
+[data-theme=light] .orb{opacity:.18}
+[data-theme=light] .dash,[data-theme=light] .cell,[data-theme=light] .stats,[data-theme=light] .tag,[data-theme=light] .sec{background:rgba(255,255,255,.75)}
+[data-theme=light] .dash-in{background:#fff}
+[data-theme=light] .stat b{color:var(--ink)}
+[data-theme=light] .btn.ghost{background:rgba(4,68,47,.05)}
+[data-theme=light] .logo svg{background:#04170f;border-radius:9px;padding:4px;width:36px;height:34px}
+.act{display:flex;align-items:center;gap:10px}
+.ic{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:background .2s}
+.ic:hover{background:rgba(61,220,132,.14)}
+button.lk{background:none;border:0;color:inherit;font:inherit;padding:4px 0;cursor:pointer;text-align:left;display:block}
+button.lk:hover{color:var(--ink)}
+dialog{border:1px solid var(--line);border-radius:24px;background:var(--bg2);color:var(--ink);padding:0;width:calc(100% - 32px);max-width:440px;max-height:88vh}
+dialog::backdrop{background:rgba(0,0,0,.62);backdrop-filter:blur(6px)}
+.dl{padding:30px}.dl h3{font-size:26px;letter-spacing:-.03em}.dl .s2{color:var(--muted);margin:6px 0 20px;font-size:15px}
+.x{float:right;margin:-8px -8px 0 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:99px;margin-bottom:20px}
+.tabs button{border:0;border-radius:99px;padding:9px;background:none;color:var(--muted);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.tabs button[aria-selected=true]{background:rgba(61,220,132,.16);color:var(--ink)}
+.gb{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer}
+.gb:hover{background:rgba(255,255,255,.12)}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;margin:16px 0}.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+.fld{display:block;margin-bottom:12px;font-size:13px;color:var(--muted)}
+.fld input{display:block;width:100%;margin-top:6px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font:16px inherit;font-family:inherit}
+.fld input:focus{outline:2px solid var(--g2);outline-offset:1px}
+.chk{display:flex;gap:10px;font-size:13px;color:var(--muted);margin:4px 0 14px}.chk a{color:var(--g2);text-decoration:underline;cursor:pointer}
+#err{color:#ff8a5c;font-size:14px;min-height:20px;margin-bottom:8px}
+#go{width:100%}
+.lg{padding:32px;font-size:15px;color:var(--muted);line-height:1.65}.lg h3{color:var(--ink);font-size:24px;margin-bottom:4px}.lg h4{color:var(--ink);margin:20px 0 4px;font-size:16px}.lg small{display:block;margin-bottom:8px}
+#legal{max-width:640px}
+#app{position:fixed;inset:0;z-index:50;overflow:auto;background:var(--bg);padding:env(safe-area-inset-top,0px) 0 80px}
+.ab{display:flex;justify-content:space-between;align-items:center;height:72px;border-bottom:1px solid var(--line);gap:12px}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:32px 0}
+.kp div{padding:22px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04)}.kp b{display:block;font-size:30px;letter-spacing:-.03em}.kp span{color:var(--muted);font-size:14px}
+.cn{padding:32px;border:1px dashed rgba(61,220,132,.4);border-radius:20px}.cn p{color:var(--muted);margin:6px 0 18px}
+.cb{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:70;width:60px;height:60px;border-radius:50%;border:0;cursor:pointer;background:linear-gradient(180deg,#5af0a0,var(--g3));box-shadow:0 12px 40px -8px rgba(61,220,132,.7);display:grid;place-items:center;transition:transform .2s}.cb:hover{transform:scale(1.07)}
+.cb svg{width:28px;height:28px;stroke:#02150c;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cp{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:70;width:380px;height:min(560px,calc(100vh - 140px));display:flex;flex-direction:column;border:1px solid var(--line);border-radius:22px;background:var(--bg2);box-shadow:0 40px 80px -20px rgba(0,0,0,.6);overflow:hidden;animation:rise .35s both}
+.ch{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}.ch svg{width:28px;height:26px}.ch b{display:block;font-size:16px}.ch small{color:var(--g2);font-size:12px}.ch .ic{margin-left:auto;width:34px;height:34px}
+#cm{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:86%;padding:11px 15px;border-radius:16px;font-size:15px;line-height:1.5;white-space:pre-wrap}
+.m.b{background:rgba(255,255,255,.07);border-bottom-left-radius:4px;align-self:flex-start}.m.u{background:linear-gradient(180deg,#5af0a0,var(--g3));color:#02150c;border-bottom-right-radius:4px;align-self:flex-end;font-weight:500}
+.typing{animation:pulse 1s infinite}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px}.chips button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:99px;padding:7px 13px;font:13px inherit;font-family:inherit;cursor:pointer}.chips button:hover{color:var(--ink);border-color:var(--g2)}
+.cf{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}.cf input{flex:1;padding:12px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font:16px inherit;font-family:inherit}.cf button{border:0;border-radius:50%;width:44px;height:44px;background:var(--g3);cursor:pointer;font-size:18px}
+.ai{padding:0 18px 12px;color:var(--muted);font-size:11.5px}
+@media(max-width:860px){.kp{grid-template-columns:1fr 1fr}.cp{right:12px;left:12px;width:auto}}
+@media(max-width:520px){.act .ghost{display:none}}
+/* estilo flat, sem brilhos */
+:root[data-theme=light]{--bg:#fff;--bg2:#f5f7f6;--ink:#10201a;--muted:#5a6a62;--line:#e1e7e3;--g2:#087f4c;--g3:#087f4c;--bt:#fff}
+:root[data-theme=dark]{--bg:#0a100d;--bg2:#111a15;--ink:#eef3f0;--muted:#8fa097;--line:rgba(255,255,255,.1);--g2:#34c47c;--g3:#2bb673;--bt:#04130b}
+.orb,#fx,.bg::before,#loader::before{display:none}
+.bg{background:var(--bg)}
+[data-theme] header,[data-theme] header.s{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none;border-color:var(--line)}
+[data-theme] h1{background:none;color:var(--ink);font-size:clamp(38px,6.2vw,76px);line-height:1.05;letter-spacing:-.04em}
+[data-theme] .btn{background:var(--g3);color:var(--bt);box-shadow:none;border-radius:8px;padding:13px 22px}
+[data-theme] .btn:hover{transform:none;box-shadow:none;filter:brightness(1.1)}
+[data-theme] .btn.sm{padding:9px 16px}
+[data-theme] .btn.ghost{background:transparent;color:var(--ink);box-shadow:0 0 0 1px var(--line) inset}
+[data-theme] .btn.ghost:hover{background:var(--bg2);box-shadow:0 0 0 1px var(--line) inset;filter:none}
+[data-theme] .tag{background:var(--bg2);border-radius:6px}
+[data-theme] .tag i{box-shadow:none;animation:none}
+[data-theme] .dash{background:var(--bg2);padding:8px;border-radius:14px;box-shadow:none}
+[data-theme] .dash-in{background:var(--bg);border:1px solid var(--line);border-radius:10px}
+[data-theme] .stats,[data-theme] .cell,[data-theme] .step{background:var(--bg);border-radius:12px;box-shadow:none}
+[data-theme] .sec{background:var(--bg2);border-radius:14px}
+[data-theme] .cell:hover{transform:none;border-color:var(--g2)}
+[data-theme] .stat b{color:var(--ink)}
+[data-theme] .chart .ln{stroke:var(--g2)}
+[data-theme] .chart .ar{fill:var(--g2);fill-opacity:.1}
+[data-theme] .up{background:rgba(8,127,76,.1);border-radius:6px}
+[data-theme] .ic,[data-theme] .gb,[data-theme] .fld input,[data-theme] .cf input{background:var(--bg);border-radius:8px}
+[data-theme] .ic:hover,[data-theme] .gb:hover{background:var(--bg2)}
+[data-theme] .cf input{background:var(--bg2)}
+[data-theme] dialog{background:var(--bg);border-radius:14px}
+.tabs,.tabs button{border-radius:8px}
+.tabs button[aria-selected=true]{background:var(--bg2)}
+[data-theme] .kp div{background:var(--bg2);border-radius:12px}
+[data-theme] .cb{background:var(--g3);box-shadow:0 4px 14px rgba(0,0,0,.2);border-radius:14px}
+[data-theme] .cb svg{stroke:var(--bt)}
+[data-theme] .cp{background:var(--bg);box-shadow:0 12px 32px rgba(0,0,0,.18);border-radius:14px}
+[data-theme] .m.b{background:var(--bg2)}
+[data-theme] .m.u{background:var(--g3);color:var(--bt)}
+[data-theme] .cf button{background:var(--g3);color:var(--bt);border-radius:8px}
+.chips button{border-radius:8px}
+.rv{transform:translateY(14px)}
+.hero2{display:grid;grid-template-columns:1fr 1.05fr;gap:56px;align-items:center;padding:96px 24px 70px}
+.h2l{text-align:left}
+.hero2 h1{margin:22px 0 0;max-width:11em}
+.lead2{margin-top:22px;font-size:20px;color:var(--muted);max-width:28em}
+.cta2{margin-top:34px;display:flex;gap:12px;flex-wrap:wrap}
+.hero2 .fine{margin-top:16px}
+.demo{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:8px}
+.di{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:18px;min-height:380px}
+.dt{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;padding-bottom:10px;overflow-x:auto}
+.dt button{border:0;background:none;color:var(--muted);font:600 14px inherit;font-family:inherit;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.dt button[aria-selected=true]{background:var(--bg2);color:var(--ink)}
+.dt b{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;background:#d9452b;color:#fff;font-size:11px;margin-left:4px;padding:0 5px}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.k3 div{padding:12px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.k3 span{font-size:12.5px;color:var(--muted);display:block}
+.k3 b{font-size:clamp(16px,2.1vw,21px);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pos{color:var(--g2)}.neg{color:#d9452b}
+.bz{display:flex;align-items:flex-end;gap:8px;height:120px;margin:20px 0 16px}
+.bz i{flex:1;background:var(--line);border-radius:4px 4px 0 0;transition:height .5s}.bz i:last-child{background:var(--g2)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--g2);margin:12px 0 8px}
+.pr{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.pr small{color:var(--muted);display:block;font-size:12.5px}
+.pr b{font-variant-numeric:tabular-nums}
+.sb{flex:1;max-width:90px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 12px}.sb i{display:block;height:100%;background:var(--g2)}.sb.lo i{background:#d9452b}
+.mini{border:1px solid var(--line);background:none;color:var(--ink);border-radius:6px;padding:5px 10px;font:600 12.5px inherit;font-family:inherit;cursor:pointer}.mini:hover{background:var(--bg2)}
+.al{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.al:before{content:"!";flex:none;width:20px;height:20px;border-radius:50%;background:#d9452b;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.note2{font-size:12.5px;color:var(--muted);margin-top:12px}
+.flow{border-top:1px solid var(--line);margin-top:48px}
+.fr{display:grid;grid-template-columns:90px 1fr 1.4fr;gap:24px;padding:30px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.fr em{font-style:normal;font-size:15px;color:var(--g2);font-weight:600}
+.fr h3{font-size:clamp(28px,3.6vw,44px);letter-spacing:-.035em;line-height:1.1}
+.fr p{color:var(--muted);font-size:17px}
+.band{background:var(--g3);color:var(--bt)}
+.band .sub{color:inherit;opacity:.85}
+.bnd{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.ex{display:grid;gap:12px}.ex div{padding:14px 18px;border-radius:12px;max-width:92%;font-size:16px;line-height:1.5}
+.ex .q{background:rgba(255,255,255,.22);justify-self:end}
+.ex .a{background:var(--bg);color:var(--ink)}
+.band .btn{background:var(--bg);color:var(--ink);margin-top:28px}
+@media(max-width:860px){.hero2{grid-template-columns:1fr;padding-top:56px;gap:36px}.fr{grid-template-columns:1fr;gap:6px}.bnd{grid-template-columns:1fr;gap:36px}.lead2{font-size:18px}}
+/* estilo PicPay: verde vivo, cantos grandes, botões pílula */
+:root[data-theme=light]{--bg:#fff;--bg2:#f3f6f4;--ink:#0b1410;--muted:#5b6b63;--line:#e6ebe8;--g2:#0a8f4f;--g3:#11c76f;--bt:#04170f;--hero:#11c76f;--heroink:#04170f}
+:root[data-theme=dark]{--bg:#09100c;--bg2:#101914;--ink:#eef3f0;--muted:#8fa097;--line:rgba(255,255,255,.1);--g2:#3ddc84;--g3:#11c76f;--bt:#04170f;--hero:#0c2e20;--heroink:#eef3f0}
+h1,h2{font-weight:800}
+[data-theme] .btn{border-radius:999px;font-weight:700}
+.herobg,.final{background:var(--hero);color:var(--heroink)}
+.herobg{border-radius:0 0 44px 44px}
+.final{border-radius:44px;margin:0 12px 24px;padding:96px 0}
+[data-theme] .herobg h1,[data-theme] .final h2{color:inherit}
+.herobg .lead2,.herobg .fine{color:inherit;opacity:.8}
+[data-theme] .herobg .tag{background:rgba(255,255,255,.3);border-color:transparent;color:inherit;border-radius:99px}
+.herobg .tag i{background:currentColor}
+[data-theme] .herobg .btn,[data-theme] .final .btn{background:#0a0f0d;color:#fff}
+[data-theme=dark] .herobg .btn,[data-theme=dark] .final .btn{background:var(--g3);color:var(--bt)}
+[data-theme] .herobg .btn.ghost,[data-theme] .final .btn.ghost{background:transparent;color:inherit;box-shadow:0 0 0 1.5px currentColor inset}
+.hero2{padding:72px 24px 96px}
+.hero2 h1{font-size:clamp(42px,7vw,84px);letter-spacing:-.045em}
+.demo{max-width:390px;margin:0 auto;padding:10px;background:#0a0f0d;border:0;border-radius:48px;box-shadow:0 30px 60px -20px rgba(0,0,0,.35)}
+.demo .di{border:0;border-radius:38px;padding:8px 16px 16px;min-height:470px}
+.demo .di:before{content:"";display:block;width:92px;height:24px;border-radius:14px;background:#0a0f0d;margin:2px auto 16px}
+.k3 div{padding:10px 8px}.k3 b{font-size:15px}
+.dt button{padding:8px 10px;font-size:13.5px}
+[data-theme] .cell,[data-theme] .step,[data-theme] .stats{border-radius:24px}
+[data-theme] .sec{border-radius:32px}
+.band{border-radius:44px;margin:0 12px}
+.soon{font-size:11px;font-weight:700;background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted);margin-left:8px;vertical-align:middle;letter-spacing:0}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.plan{border:1px solid var(--line);border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:14px}
+.plan h3{font-size:20px}.plan .pc{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1}.plan .pc small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+.plan ul{list-style:none;padding:0;display:grid;gap:10px;font-size:15.5px;flex:1;margin:6px 0 10px}
+.plan li:before{content:"✓  ";font-weight:800;color:var(--g2)}
+.plan.hot{background:var(--g3);border-color:var(--g3);color:var(--bt)}
+.plan.hot .pc small,.plan.hot li:before{color:inherit;opacity:.85}
+[data-theme] .plan.hot .btn{background:#0a0f0d;color:#fff}
+@media(max-width:860px){.plans{grid-template-columns:1fr}.herobg{border-radius:0 0 32px 32px}.band,.final{border-radius:32px}.demo{max-width:350px}}
+@media(prefers-reduced-motion:reduce){*,*::before{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}.rv{opacity:1;transform:none}.chart .ln{stroke-dashoffset:0}.chart .ar{opacity:1}#fx{display:none}}
+</style>
+</head>
+<body class="lock">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0fff5"/><stop offset=".55" stop-color="#4fe39a"/><stop offset="1" stop-color="#00b865"/></linearGradient>
+<linearGradient id="gB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#04794a"/><stop offset=".5" stop-color="#1fc572"/><stop offset="1" stop-color="#7cf5a8"/></linearGradient>
+<symbol id="mk" viewBox="340 340 640 560"><path fill="url(#gA)" d="M360 388Q360 376 372 382L642 598L560 662L468 588V870H380Q360 870 360 850Z"/><path fill="url(#gB)" d="M468 725L828 448H757L942 360L941 535L898 495L468 838Z"/><path fill="url(#gA)" d="M790 620L898 525V850Q898 870 878 870H790Z"/></symbol>
+<linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#04794a"/><stop offset="1" stop-color="#7cf5a8"/></linearGradient>
+<linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ddc84" stop-opacity=".28"/><stop offset="1" stop-color="#3ddc84" stop-opacity="0"/></linearGradient>
+</defs></svg>
+
+<div id="loader" aria-hidden="true"><div class="ld">
+<svg viewBox="340 340 640 560"><path class="p1" fill="url(#gA)" d="M360 388Q360 376 372 382L642 598L560 662L468 588V870H380Q360 870 360 850Z"/><path class="p2" fill="url(#gB)" d="M468 725L828 448H757L942 360L941 535L898 495L468 838Z"/><path class="p3" fill="url(#gA)" d="M790 620L898 525V850Q898 870 878 870H790Z"/></svg>
+<div class="bar"><i></i></div></div></div>
+
+<div class="bg" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><canvas id="fx"></canvas></div>
+
+<header id="hd"><div class="wrap nav">
+<a class="logo" href="#top" aria-label="Mavero"><svg><use href="#mk"/></svg>Mavero</a>
+<nav class="links"><a href="#recursos">Recursos</a><a href="#assistente">Assistente</a><a href="#planos">Planos</a><a href="#seguranca">Segurança</a><a href="#faq">Perguntas</a></nav>
+<div class="act"><button class="ic" id="th" aria-label="Alternar entre tema escuro e claro" title="Tema"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></button><button class="btn ghost sm" data-auth="login">Entrar</button><button class="btn sm" data-auth="signup">Começar grátis</button></div>
+</div></header>
+
+<main id="top">
+<div class="herobg"><div class="wrap hero2" id="hero">
+<div class="h2l">
+<span class="tag rv"><i></i>Monetize o seu negócio</span>
+<h1 class="rv">Todo real da sua empresa, no lugar certo.</h1>
+<p class="lead2 rv">Veja quanto entra, quanto sai e quanto sobra. Divida com a equipe, controle o estoque e saiba o que arrumar antes de virar problema.</p>
+<div class="cta2 rv"><a class="btn" href="#comecar">Criar conta grátis</a><a class="btn ghost" href="#recursos">Ver como funciona</a></div>
+<p class="fine rv">Mexa no painel ao lado. Ele funciona.</p>
+</div>
+<div class="demo rv"><div class="di">
+<div class="dt" role="tablist"><button data-t="c" aria-selected="true">Caixa</button><button data-t="e" aria-selected="false">Equipe</button><button data-t="s" aria-selected="false">Estoque</button><button data-t="a" aria-selected="false">Arrumar <b id="nb">0</b></button></div>
+<div class="dp" id="p-c"><div class="k3"><div><span>Entrou</span><b id="din" class="pos"></b></div><div><span>Saiu</span><b id="dout" class="neg"></b></div><div><span>Sobrou</span><b id="dsob"></b></div></div>
+<div class="bz" id="bars"></div>
+<div class="acts"><button class="btn sm" id="sell">+ Registrar venda</button><button class="btn ghost sm" id="spend">− Registrar despesa</button></div></div>
+<div class="dp" id="p-e" hidden><label class="lab" for="pct">Dividir <b id="pv">30</b>% da sobra com a equipe</label><input type="range" id="pct" min="0" max="60" value="30"><div id="staff"></div><p class="note2" id="pool"></p></div>
+<div class="dp" id="p-s" hidden><div id="stk"></div></div>
+<div class="dp" id="p-a" hidden><div id="alr"></div><button class="btn sm" id="askai" style="margin-top:16px">Pedir ajuda ao Assistente</button></div>
+</div></div>
+</div></div>
+
+<section id="recursos" style="padding-top:40px"><div class="wrap">
+<div class="hd rv"><h2>O caminho do dinheiro, do caixa ao pagamento da equipe.</h2><p class="sub">Quatro coisas que todo dono de negócio precisa enxergar, no mesmo lugar.</p></div>
+<div class="flow">
+<div class="fr rv"><em>01</em><h3>Entra</h3><p>Vendas e recebimentos chegam da sua conta conectada, organizados por dia e por produto.</p></div>
+<div class="fr rv"><em>02</em><h3>Sai</h3><p>Despesas e contas a pagar por categoria. Você vê o que mais pesa no caixa e o que vence logo.</p></div>
+<div class="fr rv"><em>03</em><h3>Divide</h3><p>Escolha quanto da sobra vai para a equipe e o peso de cada pessoa. O Mavero calcula a parte de cada um.</p></div>
+<div class="fr rv"><em>04</em><h3>Cuida</h3><p>Estoque, alertas e uma lista do que arrumar primeiro, antes que vire prejuízo.</p></div>
+</div></div></section>
+
+<section class="band" id="assistente" style="padding:96px 0"><div class="wrap bnd">
+<div><h2 class="rv">Um assistente que entende o seu caixa.</h2><p class="sub rv">Pergunte em português simples. O Mavero Assistente explica os números e diz o próximo passo.</p><button class="btn rv" id="openai">Abrir o Assistente</button></div>
+<div class="rv"><div class="ex"><div class="q">Por que sobrou menos este mês?</div><div class="a">As despesas com fornecedores subiram e já passam de 70% do faturamento. Comece revisando os três maiores custos.</div><div class="q">O que eu arrumo primeiro?</div><div class="a">Reponha o boné aba reta (9 un.) e pague a conta de energia, que vence em 3 dias.</div></div><p style="opacity:.8;font-size:13px;margin-top:14px">Conversa de exemplo.</p></div>
+</div></section>
+
+<script>
+(function(){
+var $=function(s){return document.getElementById(s)};
+var S={i:62400,o:41180,d:[40,55,48,70,62,85,60]},pct=30;
+var staff=[['Ana','Gerente',3],['Bruno','Vendas',2],['Carla','Atendimento',2],['Diego','Estoque',1]];
+var stock=[['Camiseta básica',128,30],['Boné aba reta',9,10],['Caneca 300 ml',54,20]];
+function R(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')}
+function draw(){
+$('din').textContent=R(S.i);$('dout').textContent=R(S.o);var sob=S.i-S.o;$('dsob').textContent=R(sob);
+var mx=Math.max.apply(null,S.d);$('bars').innerHTML=S.d.map(function(v){return '<i style="height:'+Math.round(v/mx*100)+'%"></i>'}).join('');
+var pool=Math.max(0,sob)*pct/100,tw=staff.reduce(function(a,s){return a+s[2]},0);
+$('pv').textContent=pct;
+$('staff').innerHTML=staff.map(function(s){return '<div class="pr"><span>'+s[0]+'<small>'+s[1]+' · peso '+s[2]+'</small></span><b>'+R(pool*s[2]/tw)+'</b></div>'}).join('');
+$('pool').textContent='Total para a equipe: '+R(pool)+'. Simulação: o pagamento real é feito por instituição financeira parceira.';
+$('stk').innerHTML=stock.map(function(s,i){var lo=s[1]<=s[2];return '<div class="pr"><span>'+s[0]+'<small>mínimo '+s[2]+'</small></span><div class="sb'+(lo?' lo':'')+'"><i style="width:'+Math.min(100,s[1]/(s[2]*4)*100)+'%"></i></div><b>'+s[1]+'</b><button class="mini" data-i="'+i+'" style="margin-left:10px">Vender 1</button></div>'}).join('');
+var al=[];stock.forEach(function(s){if(s[1]<=s[2])al.push('Repor <b>'+s[0]+'</b>: restam '+s[1]+' un. (mínimo '+s[2]+').')});
+if(S.o/S.i>.7)al.push('Despesas em '+Math.round(S.o/S.i*100)+'% do faturamento. Revise os custos.');
+al.push('Conta de energia vence em 3 dias.');
+$('alr').innerHTML=al.map(function(t){return '<div class="al"><span>'+t+'</span></div>'}).join('');$('nb').textContent=al.length}
+document.querySelectorAll('.dt button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dt button').forEach(function(x){x.setAttribute('aria-selected',x===b)});['c','e','s','a'].forEach(function(k){$('p-'+k).hidden=k!==b.dataset.t})}});
+$('sell').onclick=function(){var v=300+Math.round(Math.random()*1200);S.i+=v;S.d[6]+=v/30;draw()};
+$('spend').onclick=function(){S.o+=200+Math.round(Math.random()*900);draw()};
+$('pct').oninput=function(){pct=+this.value;draw()};
+$('stk').onclick=function(e){var i=e.target.dataset.i;if(i==null)return;i=+i;if(stock[i][1]>0){stock[i][1]--;S.i+=45;draw()}};
+function ai(q){var cp=$('cp');if(cp.hidden)$('cb').click();if(q){$('ci').value=q;$('cfm').requestSubmit()}}
+$('askai').onclick=function(){ai('O que preciso arrumar primeiro?')};
+$('openai').onclick=function(){ai()};
+draw();
+})();
+</script>
+
+<section id="mais" style="padding-bottom:20px"><div class="wrap">
+<div class="hd rv"><h2>E tem mais para o seu dia a dia.</h2><p class="sub">Tudo o que um dono de negócio precisa para não perder o controle.</p></div>
+<div class="bento"><div class="cell rv"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><h3>Relatórios automáticos</h3><p>Um resumo claro toda semana, pronto para você e para o seu contador.</p></div><div class="cell rv"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.3-5 6.5-5s5.7 1.5 6.5 5M17 5a3.5 3.5 0 0 1 0 6M18.500 15c1.800.6 2.800 2.200 3 5"/></svg><h3>Sócios e permissões <span class="soon">Em breve</span></h3><p>Convide sócios, gerentes e contador, cada um vendo só o que deve.</p></div><div class="cell rv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><h3>Metas do mês</h3><p>Defina uma meta de faturamento e acompanhe o quanto falta.</p></div><div class="cell rv"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg><h3>Contas a pagar</h3><p>Veja o que vence nos próximos dias e nunca mais pague multa.</p></div><div class="cell rv"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg><h3>Avisos no celular <span class="soon">Em breve</span></h3><p>Estoque baixo, meta batida ou conta vencendo: você fica sabendo na hora.</p></div><div class="cell rv"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg><h3>Exportar para o contador <span class="soon">Em breve</span></h3><p>Baixe seus dados em planilha ou PDF com um toque.</p></div></div></div></section>
+
+<section id="planos"><div class="wrap">
+<div class="hd rv"><h2>Planos que cabem no seu negócio.</h2><p class="sub">Comece de graça e evolua quando precisar. Cancele quando quiser.</p></div>
+<div class="plans">
+<div class="plan rv"><h3>Grátis</h3><div class="pc">R$ 0<small> /mês</small></div><ul><li>1 empresa</li><li>Painel de caixa e estoque</li><li>20 mensagens por dia no Assistente</li></ul><button class="btn ghost" data-auth="signup">Começar grátis</button></div>
+<div class="plan hot rv"><h3>Pro</h3><div class="pc">R$ 49<small> /mês</small></div><ul><li>Tudo do plano Grátis</li><li>Divisão com a equipe</li><li>Relatórios semanais</li><li>Mais mensagens no Assistente</li></ul><button class="btn" data-auth="signup">Assinar o Pro</button></div>
+<div class="plan rv"><h3>Negócio</h3><div class="pc">R$ 149<small> /mês</small></div><ul><li>Várias empresas</li><li>Sócios e contador com acesso</li><li>Suporte prioritário</li></ul><button class="btn ghost" data-auth="signup">Falar com a gente</button></div>
+</div></div></section>
+
+<section id="seguranca" style="padding-top:20px"><div class="wrap"><div class="sec rv">
+<div><h2>Seus dados, protegidos desde o primeiro acesso.</h2><p class="sub">Segurança não é um recurso à parte. É a base do produto.</p></div>
+<ul><li>Dados criptografados em trânsito e em repouso</li><li>Conexão somente leitura com sua conta</li><li>Você decide quem acessa cada informação</li><li>Cancele e exclua seus dados quando quiser</li></ul>
+</div></div></section>
+
+<section id="faq" style="padding-top:20px"><div class="wrap">
+<div class="hd rv"><h2>Perguntas frequentes</h2></div>
+<div class="faq rv">
+<details><summary>O Mavero movimenta o meu dinheiro?</summary><p>Não. A conexão com a sua conta é somente leitura. Quando você divide valores com a equipe, o Mavero calcula e você confirma; o pagamento é executado por uma instituição financeira autorizada.</p></details>
+<details><summary>Como funciona a divisão com a equipe?</summary><p>Você define quanto da sobra do mês vai para a equipe e o peso de cada pessoa. O Mavero mostra a parte de cada um antes de qualquer pagamento.</p></details>
+<details><summary>Como conecto minha conta?</summary><p>Depois de cadastrar a empresa, você associa a conta em poucos passos e as movimentações são importadas automaticamente.</p></details>
+<details><summary>Funciona no celular?</summary><p>Sim. O painel foi desenhado para o celular e o computador, com a mesma clareza nos dois.</p></details>
+<details><summary>Posso cancelar quando quiser?</summary><p>Sim. Não há fidelidade, e você pode excluir seus dados a qualquer momento.</p></details>
+</div></div></section>
+
+<div class="final" id="comecar"><div class="wrap">
+<h2 class="rv">Comece a enxergar o seu negócio hoje.</h2>
+<div class="cta rv"><a class="btn" href="#top">Criar conta grátis</a><a class="btn ghost" href="#recursos">Conhecer recursos</a></div>
+</div></div>
+</main>
+
+<footer><div class="wrap">
+<div class="fg">
+<div><a class="logo" href="#top" style="padding:0"><svg><use href="#mk"/></svg>Mavero</a><p style="margin-top:14px;max-width:22em">A clareza que o seu negócio precisa para crescer.</p></div>
+<div><h4>Produto</h4><a href="#recursos">Recursos</a><a href="#assistente">Assistente</a><a href="#faq">Perguntas</a></div>
+<div><h4>Empresa</h4><a href="#top">Sobre</a><a href="#top">Contato</a><a href="#top">Suporte</a></div>
+<div><h4>Legal</h4><button class="lk" data-legal="termos">Termos de uso</button><button class="lk" data-legal="priv">Privacidade</button><a href="#seguranca">Segurança</a></div>
+</div>
+<div class="copy"><span>© 2026 Mavero. Todos os direitos reservados.</span><span>Feito no Brasil</span></div>
+</div></footer>
+
+<script>
+(function(){
+var b=document.body,t0=Date.now(),done=false;
+function go(){if(done)return;done=true;var w=Math.max(0,1900-(Date.now()-t0));setTimeout(function(){b.classList.add('loaded');b.classList.remove('lock');},w)}
+window.addEventListener('load',go);setTimeout(go,4000);
+var h=document.getElementById('hd');
+addEventListener('scroll',function(){h.classList.toggle('s',scrollY>20)},{passive:true});
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}})},{threshold:.12});
+document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(el.closest('.hero')&&!el.classList.contains('dash')?i*0.08:0)+'s';io.observe(el)});
+/* particles */
+var cv=document.getElementById('fx'),cx=cv.getContext('2d'),W,H,P=[];
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;P=[];var n=Math.min(60,Math.round(W/22));for(var i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.4,v:Math.random()*.25+.08,a:Math.random()*.5+.15})}
+rs();addEventListener('resize',rs);
+(function d(){cx.clearRect(0,0,W,H);P.forEach(function(p){p.y-=p.v;if(p.y<-5){p.y=H+5;p.x=Math.random()*W}cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.283);cx.fillStyle='rgba(90,240,160,'+p.a+')';cx.fill()});requestAnimationFrame(d)})();
+})();
+</script>
+<dialog id="auth"><div class="dl"><button class="ic x" aria-label="Fechar" onclick="this.closest('dialog').close()">✕</button>
+<h3 id="ttl">Entrar no Mavero</h3><p class="s2" id="sub">Acesse o painel da sua empresa.</p>
+<div class="tabs" role="tablist"><button data-m="login" role="tab">Entrar</button><button data-m="signup" role="tab">Criar conta</button></div>
+<button class="gb" id="gg" type="button"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.800 2.400 30.300 0 24 0 14.600 0 6.500 5.400 2.600 13.200l7.900 6.100C12.400 13.600 17.700 9.500 24 9.500z"/><path fill="#4285F4" d="M46.500 24.500c0-1.600-.1-3.100-.4-4.500H24v9h12.700c-.6 3-2.200 5.500-4.700 7.200l7.600 5.900c4.400-4.100 6.900-10.100 6.900-17.600z"/><path fill="#FBBC05" d="M10.500 28.700c-.5-1.400-.8-3-.8-4.700s.3-3.200.8-4.700l-7.900-6.100C.9 16.400 0 20.100 0 24s.9 7.600 2.600 10.800z"/><path fill="#34A853" d="M24 48c6.500 0 11.900-2.100 15.900-5.800l-7.600-5.900c-2.100 1.400-4.900 2.300-8.300 2.300-6.300 0-11.600-4.100-13.500-9.800l-7.900 6.100C6.500 42.600 14.600 48 24 48z"/></svg>Continuar com Google</button>
+<div class="or">ou use seu e-mail</div>
+<form id="f" novalidate><label class="fld" id="nm" hidden>Nome<input name="name" autocomplete="name"></label>
+<label class="fld">E-mail<input name="email" type="email" autocomplete="email" required></label>
+<label class="fld">Senha<input name="pw" type="password" autocomplete="current-password" required minlength="8"></label>
+<label class="chk" id="tc" hidden><input type="checkbox" name="tc"><span>Li e aceito os <a data-legal="termos">Termos de Uso</a> e a <a data-legal="priv">Política de Privacidade</a>.</span></label>
+<div id="err" role="alert"></div><button class="btn" id="go">Entrar</button></form></div></dialog>
+
+<dialog id="legal"><div class="lg"><button class="ic x" aria-label="Fechar" onclick="this.closest('dialog').close()">✕</button>
+<div id="L-termos"><h3>Termos de Uso</h3><small>Última atualização: 24/10/2026 · Modelo: revise com um advogado antes de publicar.</small>
+<h4>1. Aceitação</h4>Ao criar uma conta ou usar o Mavero, você concorda com estes Termos.
+<h4>2. O serviço</h4>O Mavero é uma plataforma que reúne dados financeiros e de estoque da sua empresa para consulta e análise.
+<h4>3. Cadastro</h4>Você deve fornecer dados verdadeiros, manter sua senha em sigilo e ser responsável pelas atividades da sua conta.
+<h4>4. Contas conectadas</h4>A conexão com contas financeiras é somente leitura. O Mavero não movimenta o seu dinheiro. Pagamentos à equipe, quando disponíveis, são executados por instituição de pagamento parceira, mediante a sua confirmação.
+<h4>5. Mavero Assistente (IA)</h4>As respostas são geradas por inteligência artificial e podem conter erros. Não constituem consultoria financeira, contábil ou jurídica. Confirme informações importantes com um profissional.
+<h4>6. Uso aceitável</h4>É proibido usar o serviço para fins ilegais, tentar acessar dados de terceiros ou comprometer a segurança da plataforma.
+<h4>7. Planos e cancelamento</h4>Você pode cancelar a qualquer momento. Condições de cobrança serão informadas antes da contratação.
+<h4>8. Propriedade intelectual</h4>Marca, software e conteúdo do Mavero pertencem à empresa. Os dados inseridos continuam sendo seus.
+<h4>9. Limitação de responsabilidade</h4>O Mavero não responde por decisões tomadas com base nas informações exibidas, nos limites da lei.
+<h4>10. Alterações e foro</h4>Podemos atualizar estes Termos, avisando você. Aplica-se a lei brasileira, com foro na comarca do domicílio do consumidor.</div>
+<div id="L-priv" hidden><h3>Política de Privacidade</h3><small>Conforme a LGPD (Lei 13.709/2018) · Modelo: revise com um advogado.</small>
+<h4>Dados que coletamos</h4>Cadastro (nome, e-mail), dados da empresa, movimentações e estoque importados das contas que você conecta, e mensagens enviadas ao Assistente.
+<h4>Para que usamos</h4>Prestar o serviço, exibir seus indicadores, garantir a segurança e melhorar o produto.
+<h4>Compartilhamento</h4>Não vendemos seus dados. Usamos provedores de infraestrutura e de IA, como a Mistral AI, que processa as mensagens do Assistente para gerar respostas.
+<h4>Segurança e retenção</h4>Dados criptografados em trânsito e em repouso. Mantemos as informações enquanto sua conta existir e as excluímos a seu pedido, salvo obrigação legal.
+<h4>Seus direitos</h4>Você pode acessar, corrigir, portar e excluir seus dados, revogar consentimentos e pedir informações sobre compartilhamento (art. 18 da LGPD).
+<h4>Contato</h4>Encarregado de dados (DPO): privacidade@seudominio.com.br</div></div></dialog>
+
+<div id="app" hidden><div class="wrap"><div class="ab"><a class="logo" href="#top" onclick="return false"><svg><use href="#mk"/></svg>Mavero</a><div class="act"><span id="who" style="color:var(--muted);font-size:14px"></span><button class="btn ghost sm" id="back">Ver site</button><button class="btn sm" id="out">Sair</button></div></div>
+<h2 style="font-size:34px;margin-top:36px">Olá, <span id="hi"></span>.</h2><p class="sub" style="margin-top:8px">Dados de demonstração. Conecte sua conta para ver os números reais.</p>
+<div class="kp"><div><span>Faturamento do mês</span><b>R$ 48.920</b></div><div><span>Pedidos</span><b>312</b></div><div><span>Ticket médio</span><b>R$ 156,80</b></div><div><span>Itens com estoque baixo</span><b>1</b></div></div>
+<div class="cn"><h3>Conecte sua conta</h3><p>Associe sua conta e os lançamentos entram sozinhos, em modo somente leitura.</p><a class="btn" href="app.html">Abrir o app</a></div></div></div>
+
+<section id="chatroot" style="padding:0"><button class="cb" id="cb" aria-label="Abrir Mavero Assistente"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.600 7.100L4 20l1-4.600A8 8 0 1 1 21 12z"/></svg></button>
+<div class="cp" id="cp" hidden role="dialog" aria-label="Mavero Assistente"><div class="ch"><svg><use href="#mk"/></svg><div><b>Mavero Assistente</b><small>● Online</small></div><button class="ic" id="cx" aria-label="Fechar chat">✕</button></div>
+<div id="cm"></div><div class="chips" id="chips"><button>Como conecto minha conta?</button><button>Meu estoque está baixo?</button><button>Meus dados estão seguros?</button></div>
+<form class="cf" id="cfm"><input id="ci" placeholder="Pergunte sobre seu negócio" aria-label="Mensagem" autocomplete="off"><button aria-label="Enviar">➤</button></form><div class="ai">Respostas geradas por IA. Podem conter erros.</div></div></section>
+
+<script>
+(function(){
+/* CONFIG: coloque aqui a URL do seu backend (veja server.js). Vazio = modo demonstração. */
+var CFG={API:window.MAVERO_API||''};
+var $=function(s){return document.querySelector(s)},$$=function(s){return[].slice.call(document.querySelectorAll(s))},root=document.documentElement,A=$('#auth'),L=$('#legal'),user=null,mode='login';
+$('#th').onclick=function(){var t=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=t;try{localStorage.setItem('mv-theme',t)}catch(e){}};
+function tab(m){mode=m;$$('.tabs button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.m===m)});$('#nm').hidden=$('#tc').hidden=m==='login';$('#ttl').textContent=m==='login'?'Entrar no Mavero':'Criar sua conta';$('#sub').textContent=m==='login'?'Acesse o painel da sua empresa.':'Comece grátis. Leva menos de 3 minutos.';$('#go').textContent=m==='login'?'Entrar':'Criar conta';$('#err').textContent=''}
+function openAuth(m){if(user)return show();tab(m);A.showModal()}
+$$('[data-auth]').forEach(function(b){b.onclick=function(){openAuth(b.dataset.auth)}});
+$$('a.btn[href="#comecar"],.final a.btn:not(.ghost)').forEach(function(a){a.onclick=function(e){e.preventDefault();openAuth('signup')}});
+$$('.tabs button').forEach(function(b){b.onclick=function(){tab(b.dataset.m)}});
+document.addEventListener('click',function(e){var l=e.target.closest('[data-legal]');if(!l)return;e.preventDefault();$('#L-termos').hidden=l.dataset.legal!=='termos';$('#L-priv').hidden=l.dataset.legal!=='priv';L.showModal()});
+function err(m){$('#err').textContent=m}
+function show(){if(CFG.API){location.href='app.html';return}$('#hi').textContent=user.name.split(' ')[0];$('#who').textContent=user.email;$('#app').hidden=false;document.body.classList.add('lock')}
+function enter(u){user=u;try{localStorage.setItem('mv-user',JSON.stringify(u))}catch(e){}A.close();show()}
+$('#f').onsubmit=function(e){e.preventDefault();var d=new FormData(this),em=(d.get('email')||'').trim(),pw=d.get('pw')||'';
+if(!/^\S+@\S+\.\S+$/.test(em))return err('Digite um e-mail válido.');
+if(pw.length<8)return err('A senha precisa ter ao menos 8 caracteres.');
+if(mode==='signup'&&!d.get('tc'))return err('Aceite os Termos de Uso para continuar.');
+if(!CFG.API)return enter({name:d.get('name')||em.split('@')[0],email:em});
+fetch(CFG.API+'/auth/'+(mode==='login'?'login':'register'),{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:d.get('name'),email:em,password:pw})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw j;enter(j.user)})}).catch(function(x){err((x&&x.error)||'Não foi possível continuar. Tente novamente.')})};
+$('#gg').onclick=function(){if(CFG.API)location.href=CFG.API+'/auth/google';else enter({name:'Conta Google (demo)',email:'demo@gmail.com'})};
+$('#out').onclick=function(){user=null;try{localStorage.removeItem('mv-user')}catch(e){}if(CFG.API)fetch(CFG.API+'/auth/logout',{method:'POST',credentials:'include'});$('#app').hidden=true;document.body.classList.remove('lock')};
+$('#back').onclick=function(){$('#app').hidden=true;document.body.classList.remove('lock')};
+(function(){if(CFG.API)fetch(CFG.API+'/auth/me',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.user)user=j.user}).catch(function(){});else try{var s=localStorage.getItem('mv-user');if(s)user=JSON.parse(s)}catch(e){}})();
+/* chat */
+var cp=$('#cp'),box=$('#cm'),inp=$('#ci'),hist=[];
+function add(r,t){var d=document.createElement('div');d.className='m '+r;d.textContent=t;box.appendChild(d);box.scrollTop=box.scrollHeight;return d}
+add('b','Olá! Sou o Mavero Assistente. Posso explicar seus números, estoque e como usar o app.');
+$('#cb').onclick=function(){cp.hidden=!cp.hidden;if(!cp.hidden)inp.focus()};$('#cx').onclick=function(){cp.hidden=true};
+function demo(q){q=q.toLowerCase();if(/arrum|priorid/.test(q))return 'Comece pelo estoque: o Boné aba reta está abaixo do mínimo. Depois revise as despesas, que já passam de 70% do faturamento, e pague a conta de energia que vence em 3 dias.';if(/equipe|dividi|funcion|sal[aá]rio/.test(q))return 'Defina quanto da sobra vai para a equipe e o peso de cada pessoa. O Mavero calcula a parte de cada um e você confirma antes de qualquer pagamento.';if(/conect|conta/.test(q))return 'Depois de cadastrar a empresa, associe sua conta em Contas conectadas. A conexão é somente leitura e as movimentações entram automaticamente.';if(/estoque/.test(q))return 'No exemplo do painel, o Boné aba reta está com 6 unidades e precisa de reposição. Com sua conta conectada, eu avisaria antes de acabar.';if(/segur|dado/.test(q))return 'Seus dados são criptografados e a conexão com a conta é somente leitura: o Mavero não movimenta dinheiro. Detalhes na Política de Privacidade.';if(/fatur/.test(q))return 'O faturamento é o total vendido no período. Compare com o mês anterior no painel para ver se o negócio está crescendo.';return 'Esta é uma resposta de demonstração. Com o backend conectado, eu responderei usando a IA da Mistral com base nos dados da sua empresa.'}
+function ask(q){if(!q)return;$('#chips').hidden=true;add('u',q);hist.push({role:'user',content:q});var w=add('b','Pensando…');w.classList.add('typing');
+var p=CFG.API?fetch(CFG.API+'/api/chat',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist.slice(-12)})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j})}).then(function(j){return j.reply}):new Promise(function(r){setTimeout(function(){r(demo(q))},900)});
+p.then(function(t){w.classList.remove('typing');w.textContent=t;hist.push({role:'assistant',content:t})}).catch(function(x){w.classList.remove('typing');w.textContent=(x&&x.error)||'Não consegui responder agora. Tente novamente em instantes.'})}
+$('#cfm').onsubmit=function(e){e.preventDefault();var v=inp.value.trim();inp.value='';ask(v)};
+$$('#chips button').forEach(function(b){b.onclick=function(){ask(b.textContent)}});
+})();
+</script>
+</body>
+</html>

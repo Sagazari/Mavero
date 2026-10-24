@@ -1,0 +1,24 @@
+# Render Blueprint: cria a API e o Postgres de uma vez (New > Blueprint).
+services:
+  - type: web
+    name: mavero-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: { name: mavero-db, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - { key: APP_URL, sync: false }
+      - { key: API_URL, sync: false }
+      - { key: MISTRAL_API_KEY, sync: false }
+      - { key: GOOGLE_CLIENT_ID, sync: false }
+      - { key: GOOGLE_CLIENT_SECRET, sync: false }
+      - { key: DAILY_LIMIT, value: "20" }
+      - { key: GLOBAL_DAILY_LIMIT, value: "2000" }
+databases:
+  - name: mavero-db
+    plan: free

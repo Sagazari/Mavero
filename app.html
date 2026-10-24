@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#11c76f">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Mavero — Painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script>document.documentElement.dataset.theme='light';try{var t=localStorage.getItem('mv-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{--bg:#fff;--bg2:#f3f6f4;--ink:#0b1410;--mu:#5b6b63;--ln:#e6ebe8;--g:#11c76f;--gd:#0a8f4f;--bt:#04170f;--rd:#d9452b;color-scheme:light}
+:root[data-theme=dark]{--bg:#09100c;--bg2:#101914;--ink:#eef3f0;--mu:#8fa097;--ln:rgba(255,255,255,.1);--gd:#3ddc84;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 'Inter Tight',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px;border-radius:8px}
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+aside{border-right:1px solid var(--ln);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;background:var(--bg)}
+.lg{display:flex;gap:10px;align-items:center;font-weight:800;font-size:21px;letter-spacing:-.025em;padding:4px 10px 20px}
+.lg svg{width:32px;height:30px;background:#04170f;border-radius:9px;padding:4px}
+nav{display:grid;gap:2px}
+nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;background:none;border-radius:12px;font-weight:600;color:var(--mu);text-align:left}
+nav button:hover{background:var(--bg2)}
+nav button[aria-current=true]{background:var(--g);color:var(--bt)}
+nav svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+main{padding:32px clamp(16px,4vw,48px) 60px;max-width:1100px;width:100%}
+h1{font-size:clamp(26px,4vw,36px);letter-spacing:-.035em;font-weight:800;line-height:1.1}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.card{border:1px solid var(--ln);border-radius:20px;padding:20px;background:var(--bg)}
+.card h2{font-size:17px;margin-bottom:10px}
+.k{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.k span{color:var(--mu);font-size:14px}
+.k b{display:block;font-size:clamp(22px,3vw,32px);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pos{color:var(--gd)}.neg{color:var(--rd)}.mu{color:var(--mu);font-size:14px;margin-top:10px}
+.g2{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.b{border:0;border-radius:99px;padding:11px 20px;font-weight:700;background:var(--g);color:var(--bt);white-space:nowrap}
+.b:hover{filter:brightness(1.07)}
+.b.o{background:none;box-shadow:inset 0 0 0 1px var(--ln);color:var(--ink)}.b.o:hover{background:var(--bg2)}
+.b.s{padding:7px 14px;font-size:14px}.b.r{color:var(--rd)}
+.rw{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--ln)}
+.rw:last-child{border:0}.rw .gr{flex:1;min-width:0}.rw small{display:block;color:var(--mu);font-size:13px}
+.bar{width:90px;height:6px;border-radius:3px;background:var(--ln);flex:none}.bar i{display:block;height:100%;border-radius:3px;background:var(--g)}.bar.lo i{background:var(--rd)}
+.ch{display:flex;gap:6px;height:130px;align-items:flex-end;margin-top:8px}
+.ch>div{flex:1;height:100%;display:flex;align-items:flex-end;gap:2px}
+.ch i{flex:1;border-radius:3px 3px 0 0;min-height:2px}.ch .i{background:var(--g)}.ch .o{background:var(--rd);opacity:.7}
+.al{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--ln);font-size:15px}.al:last-child{border:0}
+.al:before{content:"!";flex:none;width:20px;height:20px;border-radius:50%;background:var(--rd);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:2px}
+.ok{color:var(--mu)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--ln);background:none;border-radius:99px;padding:7px 14px;font-size:14px;font-weight:600;color:var(--mu)}
+.chip[aria-pressed=true]{background:var(--g);border-color:var(--g);color:var(--bt)}
+.msgs{display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:50vh;overflow:auto;padding:4px 2px 14px}
+.m{max-width:85%;padding:11px 15px;border-radius:16px;white-space:pre-wrap}
+.m.b{background:var(--bg2);align-self:flex-start;border-bottom-left-radius:4px}.m.u{background:var(--g);color:var(--bt);align-self:flex-end;border-bottom-right-radius:4px;font-weight:500}
+.cfm{display:flex;gap:8px}.cfm input{flex:1}
+input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);font-size:16px}
+input[type=range]{accent-color:var(--g);padding:0;border:0;margin:14px 0 6px}
+dialog{border:1px solid var(--ln);border-radius:20px;background:var(--bg);color:var(--ink);padding:0;width:calc(100% - 32px);max-width:420px}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dl{padding:26px}.dl h2{font-size:22px;letter-spacing:-.02em;margin-bottom:16px}
+.fld{display:block;font-size:13px;color:var(--mu);margin-bottom:12px}.fld input,.fld select{margin-top:6px}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#0a0f0d;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:99;max-width:90%}
+@media(max-width:820px){
+.shell{grid-template-columns:1fr}
+aside{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;border-right:0;border-top:1px solid var(--ln);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:40}
+.lg{display:none}nav{display:flex;flex:1;gap:2px}
+nav button{flex:1;flex-direction:column;gap:2px;font-size:11px;padding:7px 2px;justify-content:center;text-align:center}
+.k,.g2{grid-template-columns:1fr}main{padding-bottom:110px;padding-top:calc(24px + env(safe-area-inset-top,0px))}
+.rw{flex-wrap:wrap}.rw .gr{flex:1 1 100%}.bar{width:60px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0fff5"/><stop offset=".55" stop-color="#4fe39a"/><stop offset="1" stop-color="#00b865"/></linearGradient>
+<linearGradient id="gB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#04794a"/><stop offset=".5" stop-color="#1fc572"/><stop offset="1" stop-color="#7cf5a8"/></linearGradient>
+<symbol id="mk" viewBox="340 340 640 560"><path fill="url(#gA)" d="M360 388Q360 376 372 382L642 598L560 662L468 588V870H380Q360 870 360 850Z"/><path fill="url(#gB)" d="M468 725L828 448H757L942 360L941 535L898 495L468 838Z"/><path fill="url(#gA)" d="M790 620L898 525V850Q898 870 878 870H790Z"/></symbol></defs></svg>
+<div class="shell">
+<aside><div class="lg"><svg><use href="#mk"/></svg>Mavero</div><nav id="nv" aria-label="Principal"></nav></aside>
+<main id="v" tabindex="-1"><p class="mu">Carregando…</p></main>
+</div>
+<dialog id="dlg"><div class="dl"><h2 id="dt"></h2><form id="df"></form></div></dialog>
+<div id="toast" role="status" hidden></div>
+<script>
+const $=id=>document.getElementById(id),API=window.MAVERO_API||'';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R=c=>(c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const IC={home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',box:'<path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8"/>',cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.3-5 6.5-5s5.7 1.5 6.5 5M17 5a3.5 3.5 0 0 1 0 6M18.5 15c1.8.6 2.8 2.2 3 5"/>',chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'};
+const NAV=[['inicio','Início','home'],['estoque','Estoque','box'],['caixa','Caixa','cash'],['equipe','Equipe','users'],['assistente','Assistente','chat'],['empresa','Empresa','gear']];
+let D,USER={},view=(location.hash||'#inicio').slice(1),flt='all',chat=[],left=null;
+const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth(),1);
+
+/* ---------- modo demonstração (sem API): dados só neste navegador ---------- */
+let LD;try{LD=JSON.parse(localStorage.getItem('mv-demo'))}catch(e){}
+LD=LD||{company:{name:'',cnpj:'',split_pct:30},products:[],employees:[],transactions:[]};
+const cents=v=>Math.round(parseFloat(String(v).replace(',','.'))*100)||0;
+async function local(m,p,b){b=b||{};const[,,k,id]=p.split('/');
+if(p==='/api/state')return LD;if(p==='/auth/logout')return{};
+if(k==='company')Object.assign(LD.company,{name:b.name??LD.company.name,cnpj:b.cnpj??LD.company.cnpj,split_pct:b.split_pct??LD.company.split_pct});
+else if(k==='products'){const x=LD.products.find(y=>y.id===id);
+if(m==='POST')LD.products.push({id:crypto.randomUUID(),name:b.name,qty:+b.qty||0,min_qty:+b.min_qty||0,price_cents:cents(b.price)});
+else if(m==='DELETE')LD.products=LD.products.filter(y=>y!==x);
+else Object.assign(x,{name:b.name||x.name,qty:+b.qty,min_qty:+b.min_qty,price_cents:cents(b.price)})}
+else if(k==='employees'){if(m==='POST')LD.employees.push({id:crypto.randomUUID(),name:b.name,role:b.role||'',weight:+b.weight||1});else LD.employees=LD.employees.filter(y=>y.id!==id)}
+else if(k==='sales'){const x=LD.products.find(y=>y.id===b.product_id),q=+b.qty||1;if(!x||x.qty<q)throw new Error('Estoque insuficiente.');x.qty-=q;LD.transactions.unshift({id:crypto.randomUUID(),kind:'in',amount_cents:x.price_cents*q,category:'Venda',note:q+'× '+x.name,product_id:x.id,occurred_at:new Date().toISOString()})}
+else if(k==='transactions'){if(m==='POST'){const a=cents(b.amount);if(a<=0)throw new Error('Informe um valor maior que zero.');LD.transactions.unshift({id:crypto.randomUUID(),kind:b.kind,amount_cents:a,category:b.category||'',note:b.note||'',product_id:null,occurred_at:new Date().toISOString()})}else LD.transactions=LD.transactions.filter(y=>y.id!==id||y.product_id)}
+else if(k==='chat')return{reply:'Modo demonstração: conecte a API para o Assistente responder com a IA, usando os dados da sua empresa.'};
+try{localStorage.setItem('mv-demo',JSON.stringify(LD))}catch(e){}return{ok:true}}
+
+/* ---------- API ---------- */
+async function api(m,p,b){if(!API)return local(m,p,b);
+const r=await fetch(API+p,{method:m,credentials:'include',headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
+if(r.status===401){location.href='index.html';throw new Error('Sessão expirada.')}
+const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Erro. Tente novamente.');return j}
+const load=async()=>{D=await api('GET','/api/state')};
+function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,3500)}
+async function act(fn){try{await fn();await load();draw()}catch(e){toast(e.message)}}
+
+/* ---------- diálogo genérico ---------- */
+function ask(title,fields,ok){return new Promise(res=>{const d=$('dlg');$('dt').textContent=title;
+$('df').innerHTML=fields.map(f=>`<label class="fld">${f.l}${f.o?`<select name="${f.k}">${f.o.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>`:`<input name="${f.k}" type="${f.t||'text'}" value="${esc(f.v??'')}" ${f.t==='number'?'step="any" min="0" inputmode="decimal"':''} ${f.r===0?'':'required'}>`}</label>`).join('')+`<div class="acts" style="margin-top:8px"><button class="b" type="submit">${ok||'Salvar'}</button><button class="b o" type="button" id="dx">Cancelar</button></div>`;
+$('dx').onclick=()=>{res(null);d.close()};$('df').onsubmit=e=>{e.preventDefault();res(Object.fromEntries(new FormData(e.target)));d.close()};d.onclose=()=>res(null);d.showModal();const i=d.querySelector('input,select');if(i)i.focus()})}
+
+/* ---------- cálculos ---------- */
+function sums(){let i=0,o=0;D.transactions.forEach(t=>{if(new Date(t.occurred_at)>=m0)t.kind==='in'?i+=+t.amount_cents:o+=+t.amount_cents});return{i,o,s:i-o}}
+function alerts(){const a=[],{i,o}=sums();
+if(!D.company.name)a.push('Cadastre o nome da sua empresa em <b>Empresa</b>.');
+if(!D.products.length)a.push('Cadastre seus produtos para controlar o estoque.');
+D.products.filter(p=>p.qty<=p.min_qty).forEach(p=>a.push(`Repor <b>${esc(p.name)}</b>: restam ${p.qty} un. (mínimo ${p.min_qty}).`));
+if(i>0&&o/i>.7)a.push(`Despesas em ${Math.round(o/i*100)}% do faturamento do mês. Revise os custos.`);
+else if(o>0&&i===0)a.push('Há despesas e nenhuma entrada neste mês.');
+return a}
+function split(){const{s}=sums(),pool=Math.max(0,s)*D.company.split_pct/100,tw=D.employees.reduce((a,e)=>a+e.weight,0)||1;
+return `<div class="rw"><div class="gr"><b>Total para a equipe</b></div><b class="pos">${R(pool)}</b></div>`+(D.employees.length?D.employees.map(e=>`<div class="rw"><div class="gr"><b>${esc(e.name)}</b><small>${esc(e.role||'')} · peso ${e.weight}</small></div><b>${R(pool*e.weight/tw)}</b><button class="b o s r" data-a="empdel" data-id="${e.id}" aria-label="Remover ${esc(e.name)}">✕</button></div>`).join(''):'<p class="mu">Adicione as pessoas da equipe e o peso de cada uma.</p>')}
+const head=(t,a='')=>`<div class="top"><h1>${t}</h1><div class="acts">${a}</div></div>`;
+
+/* ---------- telas ---------- */
+const V={
+inicio(){const{i,o,s}=sums(),pool=Math.max(0,s)*D.company.split_pct/100,al=alerts();
+const days=[...Array(14)].map((_,k)=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-13+k),e=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);let a=0,b=0;D.transactions.forEach(t=>{const x=new Date(t.occurred_at);if(x>=d&&x<e)t.kind==='in'?a+=+t.amount_cents:b+=+t.amount_cents});return{d,a,b}});
+const mx=Math.max(1,...days.map(x=>Math.max(x.a,x.b)));
+return head(D.company.name?esc(D.company.name):'Início','<button class="b s" data-a="sale">+ Venda</button><button class="b o s" data-a="tx-out">− Despesa</button>')+
+`<div class="k"><div class="card"><span>Entrou no mês</span><b class="pos">${R(i)}</b></div><div class="card"><span>Saiu no mês</span><b class="neg">${R(o)}</b></div><div class="card"><span>Sobrou</span><b>${R(s)}</b></div></div>
+<div class="g2"><div class="card"><h2>Últimos 14 dias</h2><div class="ch" role="img" aria-label="Entradas e saídas dos últimos 14 dias">${days.map(x=>`<div title="${x.d.toLocaleDateString('pt-BR')}: entrou ${R(x.a)}, saiu ${R(x.b)}"><i class="i" style="height:${x.a/mx*100}%"></i><i class="o" style="height:${x.b/mx*100}%"></i></div>`).join('')}</div><p class="mu">Verde: entradas. Vermelho: saídas.</p></div>
+<div class="card"><h2>O que arrumar</h2>${al.length?al.map(t=>`<div class="al"><span>${t}</span></div>`).join(''):'<p class="ok">Tudo em dia por aqui.</p>'}<div class="acts" style="margin-top:14px"><button class="b o s" data-a="chip" data-q="O que preciso arrumar primeiro?">Perguntar ao Assistente</button></div></div></div>
+<div class="card" style="margin-top:12px"><div class="rw" style="padding:0"><div class="gr"><b>Para a equipe (${D.company.split_pct}% da sobra)</b><small>${D.employees.length} pessoa(s) cadastrada(s)</small></div><b class="pos">${R(pool)}</b><button class="b o s" data-v="equipe">Ver divisão</button></div></div>`+(API?'':'<p class="mu">Modo demonstração: os dados ficam só neste navegador.</p>')},
+estoque(){return head('Estoque','<button class="b s" data-a="prod">+ Produto</button>')+`<div class="card">${D.products.length?D.products.map(p=>{const lo=p.qty<=p.min_qty;return `<div class="rw"><div class="gr"><b>${esc(p.name)}</b><small>${R(p.price_cents)} · mínimo ${p.min_qty}</small></div><div class="bar${lo?' lo':''}"><i style="width:${Math.min(100,p.qty/Math.max(1,p.min_qty*4)*100)}%"></i></div><b class="${lo?'neg':''}" style="min-width:42px;text-align:right">${p.qty}</b><button class="b s" data-a="sell" data-id="${p.id}">Vender</button><button class="b o s" data-a="edit" data-id="${p.id}">Editar</button><button class="b o s r" data-a="del" data-id="${p.id}" aria-label="Excluir ${esc(p.name)}">✕</button></div>`}).join(''):'<p class="mu">Nenhum produto ainda. Cadastre o primeiro para controlar o estoque.</p>'}</div>`},
+caixa(){const l=D.transactions.filter(t=>flt==='all'||t.kind===flt).slice(0,100);
+return head('Caixa','<button class="b s" data-a="tx-in">+ Entrada</button><button class="b o s" data-a="tx-out">− Despesa</button>')+`<div class="chips">${[['all','Tudo'],['in','Entradas'],['out','Saídas']].map(([k,n])=>`<button class="chip" data-f="${k}" aria-pressed="${flt===k}">${n}</button>`).join('')}</div><div class="card">${l.length?l.map(t=>`<div class="rw"><div class="gr"><b>${esc(t.note||t.category||(t.kind==='in'?'Entrada':'Saída'))}</b><small>${esc(t.category||'')} · ${new Date(t.occurred_at).toLocaleDateString('pt-BR')}</small></div><b class="${t.kind==='in'?'pos':'neg'}">${t.kind==='in'?'+':'−'} ${R(+t.amount_cents)}</b>${t.product_id?'':`<button class="b o s r" data-a="txdel" data-id="${t.id}" aria-label="Excluir movimentação">✕</button>`}</div>`).join(''):'<p class="mu">Nenhuma movimentação ainda.</p>'}</div>`},
+equipe(){const pct=D.company.split_pct;return head('Equipe','<button class="b s" data-a="emp">+ Pessoa</button>')+`<div class="card"><label for="sp"><b>Dividir <span id="spv">${pct}</span>% da sobra do mês com a equipe</b></label><input type="range" id="sp" min="0" max="100" value="${pct}"><div id="spl">${split()}</div><p class="mu">Calculado sobre a sobra do mês (${R(sums().s)}). O pagamento é feito por você, pelo seu banco ou por instituição parceira.</p></div>`},
+assistente(){return head('Mavero Assistente')+`<div class="card"><div class="msgs" id="ms">${chat.length?chat.map(m=>`<div class="m ${m.role==='user'?'u':'b'}">${esc(m.content)}</div>`).join(''):'<div class="m b">Olá! Posso explicar seu caixa e estoque e dizer o que arrumar primeiro.</div>'}</div>${chat.length?'':`<div class="chips">${['O que preciso arrumar primeiro?','Como está meu caixa este mês?','Quanto posso dividir com a equipe?'].map(q=>`<button class="chip" data-a="chip" data-q="${q}">${q}</button>`).join('')}</div>`}<form id="cf" class="cfm"><input id="ci" placeholder="Pergunte sobre o seu negócio" autocomplete="off" aria-label="Mensagem"><button class="b">Enviar</button></form><p class="mu">Respostas geradas por IA, podem conter erros.${left!=null?` Restam ${left} mensagens hoje.`:''}</p></div>`},
+empresa(){const c=D.company;return head('Empresa')+`<div class="card"><div class="rw"><div class="gr"><b>${esc(c.name||'Sem nome')}</b><small>CNPJ: ${esc(c.cnpj||'não informado')}</small></div><button class="b o s" data-a="co">Editar</button></div><div class="rw"><div class="gr"><b>Aparência</b><small>Tema claro ou escuro</small></div><button class="b o s" data-a="theme">Alternar</button></div><div class="rw"><div class="gr"><b>Conta</b><small>${esc(USER.email||'Modo demonstração')}</small></div><button class="b o s" data-a="out">Sair</button></div></div>`+(API?'':'<p class="mu">Modo demonstração: os dados ficam só neste navegador. Para salvar de verdade, configure a API em config.js.</p>')}};
+function draw(){if(!V[view])view='inicio';
+$('nv').innerHTML=NAV.map(([k,n,i])=>`<button data-v="${k}" ${view===k?'aria-current="true"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${IC[i]}</svg>${n}</button>`).join('');
+$('v').innerHTML=V[view]();if(view==='assistente'){const m=$('ms');if(m)m.scrollTop=m.scrollHeight}}
+
+/* ---------- ações ---------- */
+const prodF=p=>[{k:'name',l:'Nome',v:p?.name},{k:'qty',l:'Quantidade em estoque',t:'number',v:p?p.qty:0},{k:'min_qty',l:'Estoque mínimo (para avisar)',t:'number',v:p?p.min_qty:5},{k:'price',l:'Preço de venda (R$)',t:'number',v:p?(p.price_cents/100).toFixed(2):''}];
+const A={
+prod:()=>act(async()=>{const v=await ask('Novo produto',prodF());if(v)await api('POST','/api/products',v)}),
+edit:id=>act(async()=>{const v=await ask('Editar produto',prodF(D.products.find(x=>x.id===id)));if(v)await api('PATCH','/api/products/'+id,v)}),
+del:id=>act(async()=>{if(await ask('Excluir este produto?',[],'Excluir'))await api('DELETE','/api/products/'+id)}),
+sell:id=>act(async()=>{const v=await ask('Vender: '+D.products.find(x=>x.id===id).name,[{k:'qty',l:'Quantidade',t:'number',v:1}]);if(v)await api('POST','/api/sales',{product_id:id,qty:v.qty})}),
+sale:()=>{if(!D.products.length){toast('Cadastre um produto primeiro.');view='estoque';draw();return}act(async()=>{const v=await ask('Registrar venda',[{k:'product_id',l:'Produto',o:D.products.map(p=>[p.id,p.name+' ('+p.qty+' un.)'])},{k:'qty',l:'Quantidade',t:'number',v:1}]);if(v)await api('POST','/api/sales',v)})},
+'tx-in':()=>tx('in'),'tx-out':()=>tx('out'),
+txdel:id=>act(()=>api('DELETE','/api/transactions/'+id)),
+emp:()=>act(async()=>{const v=await ask('Nova pessoa',[{k:'name',l:'Nome'},{k:'role',l:'Função',r:0},{k:'weight',l:'Peso na divisão (1 = padrão)',t:'number',v:1}]);if(v)await api('POST','/api/employees',v)}),
+empdel:id=>act(()=>api('DELETE','/api/employees/'+id)),
+co:()=>editCo(),
+theme:()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('mv-theme',t)}catch(e){}},
+out:async()=>{try{await api('POST','/auth/logout')}catch(e){}location.href='index.html'}};
+const tx=k=>act(async()=>{const v=await ask(k==='in'?'Nova entrada':'Nova despesa',[{k:'amount',l:'Valor (R$)',t:'number'},{k:'category',l:'Categoria (ex.: fornecedor, aluguel)',r:0},{k:'note',l:'Observação',r:0}]);if(v)await api('POST','/api/transactions',{...v,kind:k})});
+const editCo=first=>act(async()=>{const c=D.company,v=await ask(first===true?'Cadastre a sua empresa':'Dados da empresa',[{k:'name',l:'Nome da empresa',v:c.name},{k:'cnpj',l:'CNPJ (opcional)',v:c.cnpj,r:0}]);if(v)await api('PUT','/api/company',v)});
+async function askAI(q){if(!q)return;chat.push({role:'user',content:q});view='assistente';draw();const w={role:'assistant',content:'Pensando…',p:1};chat.push(w);draw();
+try{const j=await api('POST','/api/chat',{messages:chat.filter(m=>!m.p).slice(-12)});w.content=j.reply;if(j.remaining!=null)left=j.remaining}catch(e){w.content=e.message}delete w.p;draw()}
+
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a],[data-v],[data-f]');if(!t)return;const{a,v,f,id,q}=t.dataset;
+if(v){view=v;location.hash=v;draw();return}if(f){flt=f;draw();return}
+if(a==='chip')return askAI(q);if(A[a])A[a](id)});
+document.addEventListener('submit',e=>{if(e.target.id==='cf'){e.preventDefault();const i=$('ci'),q=i.value.trim();i.value='';askAI(q)}});
+document.addEventListener('input',e=>{if(e.target.id==='sp'){D.company.split_pct=+e.target.value;$('spv').textContent=e.target.value;$('spl').innerHTML=split()}});
+document.addEventListener('change',e=>{if(e.target.id==='sp')act(()=>api('PUT','/api/company',{split_pct:+e.target.value}))});
+
+(async()=>{try{
+if(API){const r=await fetch(API+'/auth/me',{credentials:'include'});if(!r.ok){location.href='index.html';return}USER=(await r.json()).user}
+await load();draw();if(!D.company.name)editCo(true)}
+catch(e){$('v').innerHTML='<div class="card"><h2>Não foi possível carregar</h2><p class="mu">'+esc(e.message)+'</p></div>'}})();
+</script>
+</body>
+</html>
